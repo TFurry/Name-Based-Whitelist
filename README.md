@@ -1,5 +1,7 @@
 ## Simple whitelist plugin for your offline-mode server.
 
+modrinth: https://modrinth.com/plugin/name-based-whitelist
+
 ###  How to start using plugin?
 
 Disable Minecraft's whitelist in server.properties (white-list=false)
