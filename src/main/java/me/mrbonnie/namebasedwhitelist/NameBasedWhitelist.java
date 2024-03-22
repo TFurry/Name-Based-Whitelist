@@ -13,52 +13,57 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-    public class NameBasedWhitelist extends JavaPlugin implements Listener {
+public class NameBasedWhitelist extends JavaPlugin implements Listener {
 
-        private FileConfiguration config;
-        private FileConfiguration whitelist;
+    private FileConfiguration config;
+    private FileConfiguration whitelist;
 
-        @Override
-        public void onEnable() {
-            // Create plugin directory
-            if (!getDataFolder().exists()) {
-                getDataFolder().mkdir();
-            }
-
-            // Create config.yml
-            File configFile = new File(getDataFolder(), "config.yml");
-            if (!configFile.exists()) {
-                saveResource("config.yml", false);
-            }
-            config = YamlConfiguration.loadConfiguration(configFile);
-
-            // Create whitelist.yml
-            File whitelistFile = new File(getDataFolder(), "whitelist.yml");
-            if (!whitelistFile.exists()) {
-                try {
-                    whitelistFile.createNewFile();
-                } catch (IOException e) {
-                    getLogger().severe("Failed to create whitelist.yml");
-                }
-            }
-            whitelist = YamlConfiguration.loadConfiguration(whitelistFile);
-
-            // Register events
-            getServer().getPluginManager().registerEvents(this, this);
+    @Override
+    public void onEnable() {
+        // Create plugin directory
+        if (!getDataFolder().exists()) {
+            getDataFolder().mkdir();
         }
 
-        @Override
-        public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-            if (command.getName().equalsIgnoreCase("wladd")) {
+        // Create config.yml
+        File configFile = new File(getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            saveResource("config.yml", false);
+        }
+        config = YamlConfiguration.loadConfiguration(configFile);
+
+        // Create whitelist.yml
+        File whitelistFile = new File(getDataFolder(), "whitelist.yml");
+        if (!whitelistFile.exists()) {
+            try {
+                whitelistFile.createNewFile();
+            } catch (IOException e) {
+                getLogger().severe("Failed to create whitelist.yml");
+            }
+        }
+        whitelist = YamlConfiguration.loadConfiguration(whitelistFile);
+
+        // Register events
+        getServer().getPluginManager().registerEvents(this, this);
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (command.getName().equalsIgnoreCase("nbwl")) {
+            if (args.length < 2) {
+                sender.sendMessage("Usage: /nbwl <add/remove> <username>");
+                return true;
+            }
+
+            String subCommand = args[0];
+            String username = args[1];
+
+            if (subCommand.equalsIgnoreCase("add")) {
                 if (!sender.hasPermission("namewhitelist.add")) {
                     sender.sendMessage("You don't have permission to use this command.");
                     return true;
                 }
-                if (args.length != 1) {
-                    sender.sendMessage("Usage: /wladd <username>");
-                    return true;
-                }
-                String username = args[0];
+
                 List<String> whitelistedPlayers = whitelist.getStringList("players");
                 if (whitelistedPlayers.contains(username)) {
                     sender.sendMessage("Player already on the whitelist.");
@@ -68,17 +73,12 @@ import java.util.List;
                     saveWhitelist();
                     sender.sendMessage("Player added to the whitelist.");
                 }
-                return true;
-            } else if (command.getName().equalsIgnoreCase("wlremove")) {
+            } else if (subCommand.equalsIgnoreCase("remove")) {
                 if (!sender.hasPermission("namewhitelist.remove")) {
                     sender.sendMessage("You don't have permission to use this command.");
                     return true;
                 }
-                if (args.length != 1) {
-                    sender.sendMessage("Usage: /wlremove <username>");
-                    return true;
-                }
-                String username = args[0];
+
                 List<String> whitelistedPlayers = whitelist.getStringList("players");
                 if (!whitelistedPlayers.contains(username)) {
                     sender.sendMessage("Player not found on the whitelist.");
@@ -88,27 +88,32 @@ import java.util.List;
                     saveWhitelist();
                     sender.sendMessage("Player removed from the whitelist.");
                 }
-                return true;
+            } else {
+                sender.sendMessage("Invalid subcommand. Use 'add' or 'remove'.");
             }
-            return false;
+
+            return true;
         }
 
-        @EventHandler
-        public void onPlayerJoin(PlayerJoinEvent event) {
-            if (!config.getBoolean("enabled")) {
-                return;
-            }
-            String username = event.getPlayer().getName();
-            if (!whitelist.getStringList("players").contains(username)) {
-                event.getPlayer().kickPlayer("You are not on the whitelist.");
-            }
-        }
+        return false;
+    }
 
-        private void saveWhitelist() {
-            try {
-                whitelist.save(new File(getDataFolder(), "whitelist.yml"));
-            } catch (IOException e) {
-                getLogger().severe("Failed to save whitelist.yml");
-            }
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if (!config.getBoolean("enabled")) {
+            return;
+        }
+        String username = event.getPlayer().getName();
+        if (!whitelist.getStringList("players").contains(username)) {
+            event.getPlayer().kickPlayer("You are not on the whitelist.");
         }
     }
+
+    private void saveWhitelist() {
+        try {
+            whitelist.save(new File(getDataFolder(), "whitelist.yml"));
+        } catch (IOException e) {
+            getLogger().severe("Failed to save whitelist.yml");
+        }
+    }
+}
