@@ -1,2 +1,5 @@
 # Enabling or disabling Whitelist. (true or false)
 enabled: true
+
+# Kick message text.
+kick-message: "You are not on the whitelist."
