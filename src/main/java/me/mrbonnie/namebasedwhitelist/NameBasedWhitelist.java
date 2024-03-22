@@ -50,15 +50,20 @@ public class NameBasedWhitelist extends JavaPlugin implements Listener {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (command.getName().equalsIgnoreCase("nbwl")) {
-            if (args.length < 2) {
-                sender.sendMessage("Usage: /nbwl <add/remove> <username>");
+            if (args.length < 1) {
+                sender.sendMessage("Usage: '/nbwl <add/remove> [username]' or '/nbwl <on/off>'");
                 return true;
             }
 
             String subCommand = args[0];
-            String username = args[1];
 
             if (subCommand.equalsIgnoreCase("add")) {
+                if (args.length < 2) {
+                    sender.sendMessage("Usage: /nbwl add <username>");
+                    return true;
+                }
+
+                String username = args[1];
                 if (!sender.hasPermission("namewhitelist.add")) {
                     sender.sendMessage("You don't have permission to use this command.");
                     return true;
@@ -74,6 +79,12 @@ public class NameBasedWhitelist extends JavaPlugin implements Listener {
                     sender.sendMessage("Player added to the whitelist.");
                 }
             } else if (subCommand.equalsIgnoreCase("remove")) {
+                if (args.length < 2) {
+                    sender.sendMessage("Usage: /nbwl remove <username>");
+                    return true;
+                }
+
+                String username = args[1];
                 if (!sender.hasPermission("namewhitelist.remove")) {
                     sender.sendMessage("You don't have permission to use this command.");
                     return true;
@@ -88,8 +99,26 @@ public class NameBasedWhitelist extends JavaPlugin implements Listener {
                     saveWhitelist();
                     sender.sendMessage("Player removed from the whitelist.");
                 }
+            } else if (subCommand.equalsIgnoreCase("on")) {
+                if (!sender.hasPermission("namewhitelist.toggle")) {
+                    sender.sendMessage("You don't have permission to use this command.");
+                    return true;
+                }
+
+                config.set("enabled", true);
+                saveConfig();
+                sender.sendMessage("Name-based whitelist enabled.");
+            } else if (subCommand.equalsIgnoreCase("off")) {
+                if (!sender.hasPermission("namewhitelist.toggle")) {
+                    sender.sendMessage("You don't have permission to use this command.");
+                    return true;
+                }
+
+                config.set("enabled", false);
+                saveConfig();
+                sender.sendMessage("Name-based whitelist disabled.");
             } else {
-                sender.sendMessage("Invalid subcommand. Use 'add' or 'remove'.");
+                sender.sendMessage("Invalid subcommand. Use 'add', 'remove', 'on', or 'off'.");
             }
 
             return true;
@@ -103,9 +132,11 @@ public class NameBasedWhitelist extends JavaPlugin implements Listener {
         if (!config.getBoolean("enabled")) {
             return;
         }
+
         String username = event.getPlayer().getName();
         if (!whitelist.getStringList("players").contains(username)) {
-            event.getPlayer().kickPlayer("You are not on the whitelist.");
+            String kickMessage = config.getString("kick-message");
+            event.getPlayer().kickPlayer(kickMessage);
         }
     }
 
