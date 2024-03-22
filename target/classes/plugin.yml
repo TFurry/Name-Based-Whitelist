@@ -1,0 +1,11 @@
+name: NameBasedWhitelist
+version: '1.0'
+main: me.mrbonnie.namebasedwhitelist.NameBasedWhitelist
+api-version: '1.20'
+load: STARTUP
+
+commands:
+  wladd:
+    description: add player to whitelist
+  wlremove:
+    description: remove player from whitelist
