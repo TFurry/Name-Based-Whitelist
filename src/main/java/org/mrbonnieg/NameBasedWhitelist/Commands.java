@@ -46,7 +46,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                     return true;
                 }
             case "add":
-                if (!hasManagePermission(sender)) {
+                if (!hasModifyPermission(sender)) {
                     sender.sendMessage(noPermissions);
                     return true;
                 } else {
